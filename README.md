@@ -90,3 +90,7 @@ The Next.js app handles screens and authenticated backend routes. Supabase Auth 
 - Initial production build passed and the setup page was inspected in the browser.
 - Production dependency audit reported zero known vulnerabilities at verification time.
 - Live Supabase sign-in/uploads and real Vertex AI calls have not been exercised because project credentials are not configured.
+
+### Request origin behind a reverse proxy
+
+Shipment creation and other changing API calls compare the browser Origin to the incoming Host, rather than Next.js's reconstructed bind hostname. Forwarded-host headers are not trusted. When deploying behind TLS termination or a reverse proxy, set server-only `APP_ORIGIN` to the exact public origin (for example, `https://manifest.example.com`). This takes precedence over request headers.
