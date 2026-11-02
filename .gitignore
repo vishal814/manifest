@@ -1,0 +1,11 @@
+node_modules/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+.env*
+!.env.example
+*.log
+*credentials*.json
+*service-account*.json
+.DS_Store
