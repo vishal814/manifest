@@ -82,3 +82,11 @@ Extraction currently runs in a bounded server request. The database records the 
 ## Architecture
 
 The Next.js app handles screens and authenticated backend routes. Supabase Auth identifies users; PostgreSQL stores records; private Storage holds originals. The AI adapter reads each document independently and returns validated structured values with source evidence and heuristic confidence scores. AI confidence is not a measured probability of correctness. Cross-check and export decisions will be implemented in deterministic server code.
+
+## Local verification
+
+- TypeScript check passed.
+- 26 automated tests passed, including PostgreSQL migration execution and access-policy enforcement.
+- Initial production build passed and the setup page was inspected in the browser.
+- Production dependency audit reported zero known vulnerabilities at verification time.
+- Live Supabase sign-in/uploads and real Vertex AI calls have not been exercised because project credentials are not configured.
