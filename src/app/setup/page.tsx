@@ -1,6 +1,6 @@
 import { ArrowUpRight, Check, Circle, FileCheck2, ShieldCheck, ScanLine } from "lucide-react";
 import { Brand } from "@/components/brand";
-import { hasAIConfig, hasSupabaseConfig } from "@/lib/config";
+import { getSupabaseConfigError, hasAIConfig, hasSupabaseConfig } from "@/lib/config";
 
 export default function SetupPage() {
   const databaseReady = hasSupabaseConfig();
@@ -18,9 +18,10 @@ export default function SetupPage() {
           <li><span className="step-number">03</span><div><h3>Add your team</h3><p>Create test users in Supabase Auth. New users start as executives; promote a manager using the README instructions.</p></div></li>
           <li><span className="step-number">04</span><div><h3>Connect document extraction</h3><p>Configure a Vertex AI project, an available model and Application Default Credentials.</p></div>{hasAIConfig() ? <Check className="accent" size={20}/> : null}</li>
         </ol>
-        {databaseReady ? <a href="/login" className="button primary full">Continue to sign in<ArrowUpRight size={18}/></a> : <div className="connection-note"><Circle size={15}/><span>Waiting for Supabase configuration. Restart the app after adding environment variables.</span></div>}
-        <p className="small-note">Configuration presence is checked here. Database migrations, credentials and provider connectivity are verified when you use the app.</p>
+        {databaseReady ? <a href="/login" className="button primary full">Continue to sign in<ArrowUpRight size={18}/></a> : <div className="connection-note"><Circle size={15}/><span>{getSupabaseConfigError()} Restart the app after updating .env.local.</span></div>}
+        <p className="small-note">Configuration format is checked here. Database migrations, credentials and provider connectivity are verified when you use the app.</p>
       </section>
     </div><footer className="public-footer"><span>MANIFEST / DOCUMENT OPERATIONS</span><span>Built for a careful review.</span></footer>
   </main>;
 }
+
