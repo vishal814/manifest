@@ -6,11 +6,11 @@ A Next.js + Supabase workspace for shipment document extraction and human review
 
 This repository lives at `D:\Manifest`.
 
-## Day 1 status
+## Completed milestones
 
-Implemented: setup screen, email/password sign-in and sign-out, executive/manager profiles, protected shipment list with search/status filters, shipment creation, private PDF/JPG/PNG uploads, short-lived original-document links, real Vertex AI extraction adapter, persistent results and uncertainty indicators, loading/empty/error states, and a database migration with row-level access policies.
+Day 1: setup screen, email/password sign-in and sign-out, executive/manager profiles, protected shipment list with search/status filters, shipment creation, private PDF/JPG/PNG uploads, short-lived original-document links, real Vertex AI extraction adapter, persistent results and uncertainty indicators, loading/empty/error states, and a database migration with row-level access policies.
 
-Not implemented yet: durable background jobs, manual entry and field editing, cross-document checks, manager approval, audit history, and CSV export. The UI labels the current milestone. No extraction output is a verified customs record.
+Day 3: side-by-side document review, editable extracted fields and line items, manual entry for missing values, and saved corrections alongside the original extraction.
 
 ## Requirements
 
@@ -72,7 +72,6 @@ Extraction currently runs in a bounded server request. The database records the 
 
 ## Next milestones
 
-- Day 3: side-by-side document review, editable fields and manual entry.
 - Day 4: deterministic cross-checks, unit normalization and correction history.
 - Day 5: manager approval, revision invalidation and CSV export.
 - Day 6: security/integration tests and mobile/accessibility polish.
