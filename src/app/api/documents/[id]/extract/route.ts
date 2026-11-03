@@ -9,7 +9,7 @@ import { uuidSchema } from "@/lib/validation";
 const demoHashes: Readonly<Record<string, string>> = {
   invoice: "4e227b7ed92145694c3fbb5c513c46858088d6d935409ce55cd0522f8c31650c",
   packing_list: "d0009b17244d71e21f530e7bab344b004af70ed3de682f2a2afb3221e0e08ebe",
-  bill_of_lading: "1b452577e035e0bf8b7a8ee1905d2a9a4a2f513ac25fcfd6952146ce6dc850b",
+  bill_of_lading: "1b452577e035e0bf8b7a8ee1905d2a9a4a2f513ac25fcfd6952146ceb6dc850b",
 };
 
 export const runtime = "nodejs";
