@@ -39,7 +39,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const { data: run, error: runError } = await admin.from("extraction_runs").insert({ document_id: id, status: "processing", model: process.env.VERTEX_MODEL, requested_by: session.user.id }).select("id").single();
   if (runError) return errorResponse(runError.code === "23505" ? "Extraction is already running for this document." : "Unable to start extraction.", runError.code === "23505" ? 409 : 500);
   // Status is derived in Postgres from the latest extraction run per document.
-  // Day 1 uses a bounded server request; durable background processing is Day 2.
+  // Extraction runs in a bounded server request.
   try {
     const result = await extractDocument(bytes, doc.mime_type, doc.kind);
     const { error: saveError } = await admin.from("extraction_runs").update({ status: "completed", result, error_message: null }).eq("id", run.id);

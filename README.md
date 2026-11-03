@@ -68,11 +68,10 @@ Upload/schema tests run without cloud credentials. Database policy tests use an 
 
 ## Day 1 extraction limitation
 
-Extraction currently runs in a bounded server request. The database records the attempt and prevents concurrent extraction for the same document. Failed calls can be retried; attempts interrupted for more than three minutes can be reclaimed. This is not durable background execution. Day 2 will move extraction to a private worker and queue so it does not depend on the browser request.
+Extraction currently runs in a bounded server request. The database records the attempt and prevents concurrent extraction for the same document. Failed calls can be retried; attempts interrupted for more than three minutes can be reclaimed. This is not durable background execution.
 
 ## Next milestones
 
-- Day 2: durable extraction worker/queue and retry handling.
 - Day 3: side-by-side document review, editable fields and manual entry.
 - Day 4: deterministic cross-checks, unit normalization and correction history.
 - Day 5: manager approval, revision invalidation and CSV export.
