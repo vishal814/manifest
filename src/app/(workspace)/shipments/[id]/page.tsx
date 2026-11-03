@@ -7,6 +7,7 @@ import { extractionSchema, uuidSchema } from "@/lib/validation";
 import type { Document, ExtractionRun, Shipment } from "@/lib/types";
 import { DocumentUpload } from "@/components/document-upload";
 import { DocumentReview } from "@/components/document-review";
+import { compareGrossWeights, grossWeightKg } from "@/lib/cross-checks";
 import { readReview } from "@/lib/review";
 import { ExtractButton } from "@/components/extract-button";
 
@@ -33,11 +34,41 @@ export default async function ShipmentPage({ params }: { params: Promise<{ id: s
     if (!latestRuns.has(run.document_id)) latestRuns.set(run.document_id, run);
   }
   const reviewedDocuments = documents.filter(doc => readReview(latestRuns.get(doc.id)?.result));
+  const weights = (["invoice", "packing_list", "bill_of_lading"] as const).map(kind => {
+    const document = documents.find(doc => doc.kind === kind);
+    const run = document ? latestRuns.get(document.id) : undefined;
+    const extraction = extractionSchema.safeParse(run?.result);
+    const review = readReview(run?.result);
+    const raw = review ? review.fields.grossWeightKg : extraction.data?.fields.grossWeightKg.value;
+    return {
+      kind,
+      document,
+      reviewed: Boolean(review),
+      weight: run?.status === "completed" ? grossWeightKg(raw) : null,
+    };
+  });
+  const check = compareGrossWeights(weights.map(row => row.weight));
+  const formatWeight = new Intl.NumberFormat("en-IN", { maximumSignificantDigits: 15 });
   const configured = hasAIConfig() && Boolean(process.env.SUPABASE_SECRET_KEY);
   return <><Link href="/shipments" className="back-link"><ArrowLeft size={16}/>All shipments</Link><div className="page-heading"><div><span className="eyebrow accent">SHIPMENT WORKSPACE</span><h1>{shipment.reference}</h1><p>{shipment.supplier}</p></div><span className={`status ${shipment.status}`}>{labels[shipment.status]}</span></div>
     <div className="notice"><ShieldAlert size={19}/><span><strong>Document review.</strong> Compare extracted values with the original and save any corrections.</span></div>
     {process.env.GOOGLE_CLOUD_LOCATION === "global" && <p className="notice">Global demo extraction is available for the three original Manifest sample PDFs.</p>}
     <section className="panel"><div className="panel-title"><h2>Source documents</h2><span className="count">{documents.length} / 3 uploaded</span></div><div className="panel-body"><DocumentUpload shipmentId={id} existingKinds={documents.map(d => d.kind)}/></div></section>
+    <section className="panel">
+      <div className="panel-title"><h2>Shipment cross-checks</h2></div>
+      <div className="panel-body">
+        <h3>Gross weight</h3>
+        {check.status === "mismatch" && <p className="error-message"><strong>Weight mismatch.</strong> The highest and lowest values differ by {formatWeight.format(check.difference)} kg.</p>}
+        {check.status === "pending" && <p className="small-note">Waiting for a valid gross weight from all three documents.</p>}
+        {check.status === "match" && <p className="notice">Gross weight matches across all three documents.</p>}
+        <dl>
+          {weights.map(({ kind, document, reviewed, weight }) => <div key={kind}>
+            <dt>{document ? <a className="back-link" href={`#document-${document.id}`}>{labels[kind]}</a> : labels[kind]}</dt>
+            <dd>{weight === null ? "No valid gross weight yet" : `${formatWeight.format(weight)} kg · ${reviewed ? "Saved review" : "AI extraction"}`}</dd>
+          </div>)}
+        </dl>
+      </div>
+    </section>
     <div className="section-heading"><h2>Extraction workspace</h2><Link href={`/shipments/${id}`} className="back-link"><RefreshCw size={15}/>Refresh status</Link></div>
     {reviewedDocuments.length > 0 && <p className="notice">
       <span><strong>Saved reviews:</strong>{" "}

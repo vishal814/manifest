@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import type { ExtractionResult } from "@/lib/validation";
 import type { SavedReview } from "@/lib/review";
@@ -21,6 +22,7 @@ type Props = {
 };
 
 export function DocumentReview({ documentId, kind, runId, extraction, saved }: Props) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [revision, setRevision] = useState(saved?.revision ?? null);
   const [pending, setPending] = useState(false);
@@ -50,6 +52,7 @@ export function DocumentReview({ documentId, kind, runId, extraction, saved }: P
       if (!response.ok) throw new Error(result.error ?? "Unable to save the review.");
       setRevision(result.revision);
       setFeedback("Review saved.");
+      router.refresh();
     } catch (error) {
       setFailed(true);
       setFeedback(error instanceof Error ? error.message : "Unable to save the review.");
