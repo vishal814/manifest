@@ -8,13 +8,13 @@ import type { Document, ExtractionRun, Shipment } from "@/lib/types";
 import { DocumentUpload } from "@/components/document-upload";
 import { DocumentReview } from "@/components/document-review";
 import { compareGrossWeights, grossWeightKg } from "@/lib/cross-checks";
-import { readReview } from "@/lib/review";
+import { readReview, reviewFieldLabels } from "@/lib/review";
 import { ExtractButton } from "@/components/extract-button";
 
 const labels: Record<string, string> = { invoice: "Commercial invoice", packing_list: "Packing list", bill_of_lading: "Bill of lading", draft: "Draft", processing: "Processing", needs_review: "Needs review" };
 
 export default async function ShipmentPage({ params }: { params: Promise<{ id: string }> }) {
-  const { client } = await requireUser(); const { id } = await params;
+  const { client, user, profile } = await requireUser(); const { id } = await params;
   if (!uuidSchema.safeParse(id).success) notFound();
   const { data: record, error } = await client.from("shipments").select("*").eq("id", id).single();
   if (error && error.code !== "PGRST116") throw new Error("Unable to load this shipment.");
@@ -81,8 +81,28 @@ export default async function ShipmentPage({ params }: { params: Promise<{ id: s
     {!documents.length && <div className="empty-state panel"><FileText size={30} className="muted"/><h3>Start with the original.</h3><p>Upload a document above. Its extracted fields will appear here.</p></div>}
     {documents.map(doc => {
       const run = latestRuns.get(doc.id); const parsed = extractionSchema.safeParse(run?.result);
+      const history = runs.filter(entry => entry.document_id === doc.id)
+        .flatMap(entry => readReview(entry.result)?.history ?? [])
+        .sort((a, b) => b.savedAt.localeCompare(a.savedAt));
       return <section id={`document-${doc.id}`} className="panel document-panel" key={doc.id}><div className="panel-title"><div><h2>{labels[doc.kind]}</h2><span className="small-note">{doc.filename} · {(doc.size_bytes/1024).toFixed(0)} KB</span></div><a href={`/api/documents/${doc.id}/preview`} target="_blank" rel="noopener noreferrer" className="button secondary">Open original<ArrowUpRight size={16}/></a></div><div className="panel-body"><ExtractButton documentId={doc.id} completed={run?.status === "completed"} processing={run?.status === "processing"} configured={configured}/>{run?.status === "failed" && <p role="alert" className="error-message">{run.error_message}</p>}{run?.status === "processing" && <p className="small-note">Extraction is in progress. Refresh to see the result. If an attempt was interrupted, retry after three minutes.</p>}
       {parsed.success && run && <DocumentReview key={run.id} documentId={doc.id} kind={doc.kind} runId={run.id} extraction={parsed.data} saved={readReview(run.result)}/>}
+      {history.length > 0 && <details>
+        <summary>Correction history ({history.length})</summary>
+        <ol>
+          {history.map(entry => <li key={entry.revision}>
+            <p className="small-note">
+              {entry.savedBy === user.id ? profile.display_name : entry.savedBy} ·{" "}
+              <time dateTime={entry.savedAt}>{entry.savedAt.replace("T", " ").slice(0, 19)} UTC</time>
+            </p>
+            <ul>
+              {entry.changes.map(change => <li key={change.row + ":" + change.field}>
+                {change.row !== undefined && <>Line {change.row + 1} · </>}
+                {reviewFieldLabels[change.field] ?? change.field}: {change.before ?? "Blank"} → {change.after ?? "Blank"}
+              </li>)}
+            </ul>
+          </li>)}
+        </ol>
+      </details>}
       {!run && <p className="small-note">The original is safely stored. Start extraction when your AI connection is ready.</p>}</div></section>;
     })}</>;
 }

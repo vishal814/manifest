@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { apiUser, errorResponse, sameOrigin } from "@/lib/api";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { readReview, reviewRequest } from "@/lib/review";
+import { readReview, reviewChanges, reviewRequest } from "@/lib/review";
 import { extractionSchema, uuidSchema } from "@/lib/validation";
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
@@ -32,7 +32,15 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     return errorResponse("Review values must match the original extraction fields and rows.");
   }
 
-  const review = { fields, items, revision: randomUUID(), savedAt: new Date().toISOString(), savedBy: session.user.id };
+  const metadata = { revision: randomUUID(), savedAt: new Date().toISOString(), savedBy: session.user.id };
+  const changes = reviewChanges(extraction.data, current, { fields, items });
+  const history = current?.history ?? [];
+  const review = {
+    fields,
+    items,
+    ...metadata,
+    history: changes.length ? [...history, { ...metadata, changes }] : history,
+  };
   const update = createAdminClient().from("extraction_runs")
     .update({ result: { ...run.result, review } })
     .eq("id", runId).eq("document_id", id).eq("status", "completed");

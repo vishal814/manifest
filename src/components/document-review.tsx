@@ -3,15 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import type { ExtractionResult } from "@/lib/validation";
-import type { SavedReview } from "@/lib/review";
-
-const labels: Record<string, string> = {
-  supplier: "Supplier", buyer: "Buyer", invoiceNumber: "Invoice number",
-  invoiceDate: "Invoice date", currency: "Currency", incoterm: "Incoterm",
-  invoiceTotal: "Invoice total", packageCount: "Packages", grossWeightKg: "Gross weight (kg)",
-  netWeightKg: "Net weight (kg)", containerNumbers: "Containers",
-  description: "Description", hsn: "HSN", quantity: "Quantity", unitPrice: "Unit price", lineTotal: "Line total",
-};
+import { reviewFieldLabels, type SavedReview } from "@/lib/review";
 
 type Props = {
   documentId: string;
@@ -62,7 +54,7 @@ export function DocumentReview({ documentId, kind, runId, extraction, saved }: P
   }
 
   function input(key: string, field: ExtractionResult["fields"]["supplier"], reviewed: string | null | undefined, name = key) {
-    const label = key === "invoiceDate" && kind !== "invoice" ? "Document date" : labels[key];
+    const label = key === "invoiceDate" && kind !== "invoice" ? "Document date" : reviewFieldLabels[key];
     return <label key={name}>
       {label}
       <input name={name} defaultValue={(reviewed === undefined ? field.value : reviewed) ?? ""} maxLength={1000}/>

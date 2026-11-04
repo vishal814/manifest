@@ -12,6 +12,8 @@ Day 1: setup screen, email/password sign-in and sign-out, executive/manager prof
 
 Day 3: side-by-side document review, editable extracted fields and line items, manual entry for missing values, and saved corrections alongside the original extraction.
 
+Day 4: gross-weight cross-checks across shipment documents, weight unit conversion, and correction history for edits saved from this milestone onward.
+
 ## Requirements
 
 - Node.js 24 LTS and npm.
@@ -72,7 +74,6 @@ Extraction currently runs in a bounded server request. The database records the 
 
 ## Next milestones
 
-- Day 4: deterministic cross-checks, unit normalization and correction history.
 - Day 5: manager approval, revision invalidation and CSV export.
 - Day 6: security/integration tests and mobile/accessibility polish.
 - Day 7: deployment, labelled extraction evaluation and submission walkthrough.
