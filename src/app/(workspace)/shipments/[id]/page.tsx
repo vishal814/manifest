@@ -9,6 +9,8 @@ import { DocumentUpload } from "@/components/document-upload";
 import { DocumentReview } from "@/components/document-review";
 import { compareGrossWeights, grossWeightKg } from "@/lib/cross-checks";
 import { readReview, reviewFieldLabels } from "@/lib/review";
+import { ShipmentDecisionForm } from "@/components/shipment-decision-form";
+import { canExportShipment, shipmentReviewState, type ShipmentDecision } from "@/lib/shipment-approval";
 import { ExtractButton } from "@/components/extract-button";
 
 const labels: Record<string, string> = { invoice: "Commercial invoice", packing_list: "Packing list", bill_of_lading: "Bill of lading", draft: "Draft", processing: "Processing", needs_review: "Needs review" };
@@ -49,8 +51,17 @@ export default async function ShipmentPage({ params }: { params: Promise<{ id: s
   });
   const check = compareGrossWeights(weights.map(row => row.weight));
   const formatWeight = new Intl.NumberFormat("en-IN", { maximumSignificantDigits: 15 });
+  const approval = shipmentReviewState(shipment, documents, latestRuns);
+  const { data: decisionRow, error: decisionError } = await client.from("shipment_decisions")
+    .select("id,revision,decision,note,created_at").eq("shipment_id", id)
+    .order("created_at", { ascending: false }).order("id", { ascending: false }).limit(1).maybeSingle();
+  const decision = decisionRow as ShipmentDecision | null;
+  const exportReady = canExportShipment(approval, decision ?? undefined);
+  const staleApproval = decision?.decision === "approved" && decision.revision !== approval.revision;
+  const statusLabel = exportReady ? "Approved" : staleApproval || decision?.decision === "returned"
+    ? "Needs review" : labels[shipment.status];
   const configured = hasAIConfig() && Boolean(process.env.SUPABASE_SECRET_KEY);
-  return <><Link href="/shipments" className="back-link"><ArrowLeft size={16}/>All shipments</Link><div className="page-heading"><div><span className="eyebrow accent">SHIPMENT WORKSPACE</span><h1>{shipment.reference}</h1><p>{shipment.supplier}</p></div><span className={`status ${shipment.status}`}>{labels[shipment.status]}</span></div>
+  return <><Link href="/shipments" className="back-link"><ArrowLeft size={16}/>All shipments</Link><div className="page-heading"><div><span className="eyebrow accent">SHIPMENT WORKSPACE</span><h1>{shipment.reference}</h1><p>{shipment.supplier}</p></div><span className={`status ${shipment.status}`}>{statusLabel}</span></div>
     <div className="notice"><ShieldAlert size={19}/><span><strong>Document review.</strong> Compare extracted values with the original and save any corrections.</span></div>
     {process.env.GOOGLE_CLOUD_LOCATION === "global" && <p className="notice">Global demo extraction is available for the three original Manifest sample PDFs.</p>}
     <section className="panel"><div className="panel-title"><h2>Source documents</h2><span className="count">{documents.length} / 3 uploaded</span></div><div className="panel-body"><DocumentUpload shipmentId={id} existingKinds={documents.map(d => d.kind)}/></div></section>
@@ -67,6 +78,21 @@ export default async function ShipmentPage({ params }: { params: Promise<{ id: s
             <dd>{weight === null ? "No valid gross weight yet" : `${formatWeight.format(weight)} kg · ${reviewed ? "Saved review" : "AI extraction"}`}</dd>
           </div>)}
         </dl>
+      </div>
+    </section>
+    <section className="panel">
+      <div className="panel-title"><h2>Manager approval</h2></div>
+      <div className="panel-body">
+        {decisionError ? <p className="small-note">Approval is unavailable. Ask the workspace owner to apply the Day 5 database migration.</p> : <>
+          {exportReady && <p className="notice">The current shipment version is approved.</p>}
+          {staleApproval && <p className="notice">The shipment changed after approval and needs a new manager decision.</p>}
+          {decision?.decision === "returned" && <p className="notice"><strong>Returned for correction.</strong> {decision.note}</p>}
+          {exportReady && decision?.note && <p><strong>Manager note.</strong> {decision.note}</p>}
+          {!approval.complete && <p className="small-note">Save a review with a valid gross weight for each of the three documents to make this shipment ready for approval.</p>}
+          {exportReady && <a className="button secondary" href={`/api/shipments/${id}/export`}>Download approved CSV</a>}
+          {profile.role === "manager" ? <ShipmentDecisionForm key={approval.revision} id={id} revision={approval.revision}
+            complete={approval.complete} mismatch={approval.mismatch}/> : !exportReady && <p className="small-note">A manager must approve the current version before export.</p>}
+        </>}
       </div>
     </section>
     <div className="section-heading"><h2>Extraction workspace</h2><Link href={`/shipments/${id}`} className="back-link"><RefreshCw size={15}/>Refresh status</Link></div>

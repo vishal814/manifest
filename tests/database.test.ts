@@ -45,6 +45,7 @@ beforeAll(async () => {
   `);
   const migration = await readFile(new URL('../supabase/migrations/202611020001_day_one.sql', import.meta.url), 'utf8');
   await db.exec(migration);
+  await db.exec(await readFile(new URL('../supabase/migrations/202611050001_shipment_approvals.sql', import.meta.url), 'utf8'));
   for (const id of Object.values(users)) await db.query('insert into auth.users(id) values ($1)', [id]);
   await db.query("update public.profiles set role = 'manager' where id = $1", [users.manager]);
   await db.query("insert into public.shipments(id,reference,supplier,created_by) values ($1,'SHP-ONE','Supplier B',$2),($3,'SHP-TWO','Supplier C',$4)", [firstShipment, users.first, secondShipment, users.second]);
@@ -88,4 +89,14 @@ describe('database migration and real PostgreSQL access policies', () => {
     const result = await db.query<{ role: string }>('select role from public.profiles where id=$1',[id]);
     expect(result.rows[0].role).toBe('executive');
   });
+});
+
+it('only managers can record decisions and only shipment viewers can read them', async () => {
+  const insert = 'insert into public.shipment_decisions(shipment_id, revision, decision, note, decided_by) values ($1,$2,$3,$4,$5)';
+  const revision = 'a'.repeat(64);
+  await expect(asUser(users.first, () => db.query(insert, [firstShipment, revision, 'approved', '', users.first]))).rejects.toThrow(/row-level security/i);
+  await expect(asUser(users.manager, () => db.query(insert, [firstShipment, revision, 'approved', '', users.first]))).rejects.toThrow(/row-level security/i);
+  await asUser(users.manager, () => db.query(insert, [firstShipment, revision, 'approved', '', users.manager]));
+  expect((await asUser(users.first, () => db.query('select decision from public.shipment_decisions'))).rows).toEqual([{ decision: 'approved' }]);
+  expect((await asUser(users.second, () => db.query('select decision from public.shipment_decisions'))).rows).toEqual([]);
 });

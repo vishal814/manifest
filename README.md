@@ -14,6 +14,8 @@ Day 3: side-by-side document review, editable extracted fields and line items, m
 
 Day 4: gross-weight cross-checks across shipment documents, weight unit conversion, and correction history for edits saved from this milestone onward.
 
+Day 5: managers can approve or return a reviewed shipment. Changes require fresh approval. The export is a generic CSV of reviewed document and line-item fields.
+
 ## Requirements
 
 - Node.js 24 LTS and npm.
@@ -26,7 +28,7 @@ Day 4: gross-weight cross-checks across shipment documents, weight unit conversi
 1. Open a terminal in `D:\Manifest`.
 2. Run `npm ci`.
 3. Copy `.env.example` to `.env.local` and fill in your Supabase project URL, publishable key and **server-only** secret key. Never put a secret key in a variable beginning with `NEXT_PUBLIC_`.
-4. In Supabase SQL Editor, run `supabase/migrations/202611020001_day_one.sql` once on a fresh project. It creates tables, profiles, the private document bucket and access policies.
+4. In Supabase SQL Editor, run `supabase/migrations/202611020001_day_one.sql` once on a fresh project. It creates tables, profiles, the private document bucket and access policies. Then run the contents of `supabase/migrations/202611050001_shipment_approvals.sql`. Existing projects that already ran Day 1 only need the Day 5 migration.
 5. Create two fictional test users in Supabase Authentication > Users. Profiles are created automatically as executives. Set their display names through Auth user metadata or SQL.
 6. Promote the intended manager using SQL, replacing the placeholder with their Auth user UUID:
 
@@ -74,7 +76,7 @@ Extraction currently runs in a bounded server request. The database records the 
 
 ## Next milestones
 
-- Day 5: manager approval, revision invalidation and CSV export.
+- Day 5: apply the shipment approvals migration to enable manager decisions and approved CSV export.
 - Day 6: security/integration tests and mobile/accessibility polish.
 - Day 7: deployment, labelled extraction evaluation and submission walkthrough.
 
