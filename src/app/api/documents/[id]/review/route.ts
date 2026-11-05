@@ -17,7 +17,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
 
   // Read through the signed-in user's policies before writing with the server client.
   const { data: run, error } = await session.client.from("extraction_runs")
-    .select("id,status,result").eq("document_id", id)
+    .select("id,status,result").eq("document_id", id).neq("status", "failed")
     .order("created_at", { ascending: false }).limit(1).maybeSingle();
   if (error) return errorResponse("Unable to load the extraction.", 500);
   if (!run) return errorResponse("Extraction not found.", 404);

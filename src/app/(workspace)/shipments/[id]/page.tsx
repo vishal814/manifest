@@ -31,9 +31,11 @@ export default async function ShipmentPage({ params }: { params: Promise<{ id: s
     if (runsError) throw new Error("Unable to load extraction results.");
     runs = (data ?? []) as ExtractionRun[];
   }
+  const latestAttempts = new Map<string, ExtractionRun>();
   const latestRuns = new Map<string, ExtractionRun>();
   for (const run of runs) {
-    if (!latestRuns.has(run.document_id)) latestRuns.set(run.document_id, run);
+    if (!latestAttempts.has(run.document_id)) latestAttempts.set(run.document_id, run);
+    if (run.status !== "failed" && !latestRuns.has(run.document_id)) latestRuns.set(run.document_id, run);
   }
   const reviewedDocuments = documents.filter(doc => readReview(latestRuns.get(doc.id)?.result));
   const weights = (["invoice", "packing_list", "bill_of_lading"] as const).map(kind => {
@@ -106,11 +108,12 @@ export default async function ShipmentPage({ params }: { params: Promise<{ id: s
     </p>}
     {!documents.length && <div className="empty-state panel"><FileText size={30} className="muted"/><h3>Start with the original.</h3><p>Upload a document above. Its extracted fields will appear here.</p></div>}
     {documents.map(doc => {
+      const attempt = latestAttempts.get(doc.id);
       const run = latestRuns.get(doc.id); const parsed = extractionSchema.safeParse(run?.result);
       const history = runs.filter(entry => entry.document_id === doc.id)
         .flatMap(entry => readReview(entry.result)?.history ?? [])
         .sort((a, b) => b.savedAt.localeCompare(a.savedAt));
-      return <section id={`document-${doc.id}`} className="panel document-panel" key={doc.id}><div className="panel-title"><div><h2>{labels[doc.kind]}</h2><span className="small-note">{doc.filename} · {(doc.size_bytes/1024).toFixed(0)} KB</span></div><a href={`/api/documents/${doc.id}/preview`} target="_blank" rel="noopener noreferrer" className="button secondary">Open original<ArrowUpRight size={16}/></a></div><div className="panel-body"><ExtractButton documentId={doc.id} completed={run?.status === "completed"} processing={run?.status === "processing"} configured={configured}/>{run?.status === "failed" && <p role="alert" className="error-message">{run.error_message}</p>}{run?.status === "processing" && <p className="small-note">Extraction is in progress. Refresh to see the result. If an attempt was interrupted, retry after three minutes.</p>}
+      return <section id={`document-${doc.id}`} className="panel document-panel" key={doc.id}><div className="panel-title"><div><h2>{labels[doc.kind]}</h2><span className="small-note">{doc.filename} · {(doc.size_bytes/1024).toFixed(0)} KB</span></div><a href={`/api/documents/${doc.id}/preview`} target="_blank" rel="noopener noreferrer" className="button secondary">Open original<ArrowUpRight size={16}/></a></div><div className="panel-body"><ExtractButton documentId={doc.id} completed={attempt?.status === "completed"} processing={attempt?.status === "processing"} configured={configured}/>{attempt?.status === "failed" && <p role="alert" className="error-message">{run?.status === "completed" ? "The latest extraction failed. You can still review the previous successful result below." : attempt.error_message}</p>}{run?.status === "processing" && <p className="small-note">Extraction is in progress. Refresh to see the result. If an attempt was interrupted, retry after three minutes.</p>}
       {parsed.success && run && <DocumentReview key={run.id} documentId={doc.id} kind={doc.kind} runId={run.id} extraction={parsed.data} saved={readReview(run.result)}/>}
       {history.length > 0 && <details>
         <summary>Correction history ({history.length})</summary>
@@ -129,6 +132,6 @@ export default async function ShipmentPage({ params }: { params: Promise<{ id: s
           </li>)}
         </ol>
       </details>}
-      {!run && <p className="small-note">The original is safely stored. Start extraction when your AI connection is ready.</p>}</div></section>;
+      {!attempt && <p className="small-note">The original is safely stored. Start extraction when your AI connection is ready.</p>}</div></section>;
     })}</>;
 }

@@ -13,6 +13,7 @@ export async function loadShipmentApproval(client: SupabaseClient, id: string) {
   const { data, error } = await client.from("shipments")
     .select("*,documents(*,extraction_runs(id,document_id,status,result,error_message,created_at)),shipment_decisions(id,revision,decision,note,created_at)")
     .eq("id", id)
+    .neq("documents.extraction_runs.status", "failed")
     .order("created_at", { referencedTable: "documents.extraction_runs", ascending: false })
     .limit(1, { referencedTable: "documents.extraction_runs" })
     .order("created_at", { referencedTable: "shipment_decisions", ascending: false })
