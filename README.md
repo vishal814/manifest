@@ -76,8 +76,7 @@ Extraction currently runs in a bounded server request. The database records the 
 
 ## Next milestones
 
-- Day 5: apply the shipment approvals migration to enable manager decisions and approved CSV export.
-- Day 6: security/integration tests and mobile/accessibility polish.
+- **Next — Day 6:** security and integration tests, plus mobile and accessibility polish.
 - Day 7: deployment, labelled extraction evaluation and submission walkthrough.
 
 ## Architecture
