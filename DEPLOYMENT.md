@@ -16,7 +16,9 @@ The Docker build installs locked dependencies and builds inside Linux. Local `.e
 
 Minimum instances: 0; maximum instances: 1; memory: 512 MiB; CPU: 1; request timeout: 120 seconds. Idle services can have a cold start. These settings limit resources but are not a spending cap; builds, storage and requests can consume trial credits.
 
-The existing global Vertex AI demo restriction allows only the exact fictional sample PDFs. This deployment is for evaluation with synthetic documents. Global AI processing is not an India-only production deployment. Extraction still runs within a request; durable background processing remains deferred.
+The live configuration uses `GOOGLE_CLOUD_LOCATION=asia-south1` and `VERTEX_MODEL=gemini-3.5-flash-lite`. New PDFs, JPGs and PNGs can use extraction within the existing upload limits. Google lists India ML-processing support for this model: https://docs.cloud.google.com/gemini-enterprise-agent-platform/resources/data-residency . A freshly generated fictional invoice passed the real extraction adapter and schema validation on this endpoint. If configuration is switched back to `global`, the exact-sample-PDF restriction still applies.
+
+Extraction still runs within a request; durable background processing remains deferred. Use synthetic evaluation documents until the whole deployment, including Supabase storage location and production upload protections, has been checked for client use.
 
 ## Verification
 
