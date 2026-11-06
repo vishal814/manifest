@@ -70,11 +70,13 @@ export function checkShipmentDocuments(documents: CheckDocument[]): ShipmentChec
   const validLines = lines.length > 0 && lines.every(line => line !== null);
   const sum = lines.reduce<bigint>((value, line) => value + (line ?? 0n), 0n);
   const arithmetic = total === null || !validLines ? "pending" : total === sum ? "match" : "mismatch";
+  const money = (value: bigint) => (value / 1_000_000n).toString() + "." + (value % 1_000_000n).toString().padStart(6, "0").replace(/0+$/, "").padEnd(2, "0");
+  const invoiceMessage = arithmetic === "pending" ? "Enter invoice currency, total and a total for every invoice line item." : `Invoice total: ${currency} ${money(total!)}. Line-item sum: ${currency} ${money(sum)}. ${arithmetic === "match" ? "Totals match." : "Totals differ; check charges, taxes and source values."}`;
   const netStatus = badNet ? "pending" : providedNet < 2 ? "not_applicable" : net.status === "mismatch" ? "mismatch" : "match";
   return [
     { id: "gross_weight", label: "Gross weight", status: weight.status, message: weight.status === "mismatch" ? "Gross weights differ across documents." : weight.status === "pending" ? "Enter a valid gross weight in all three documents." : "Gross weights match." },
     { id: "net_weight", label: "Net weight", status: netStatus, message: netStatus === "not_applicable" ? "Fewer than two documents state a net weight; no comparison is possible." : netStatus === "pending" ? "Correct the invalid net weight value." : netStatus === "mismatch" ? "Net weights differ across documents that state them." : "Available net weights match." },
     { id: "packages", label: "Package count", status: packages.status, message: packages.status === "pending" ? "Enter a positive whole package count in all three documents." : packages.status === "mismatch" ? "Package counts differ across documents." : "Package counts match across all three documents." },
-    { id: "invoice_total", label: "Invoice total vs line-item sum", status: arithmetic, message: arithmetic === "pending" ? "Enter invoice currency, total and a total for every invoice line item." : arithmetic === "mismatch" ? "Invoice total differs from the sum of its line totals. Check charges, taxes and source values." : "Invoice total equals the sum of its line totals." },
+    { id: "invoice_total", label: "Invoice total vs line-item sum", status: arithmetic, message: invoiceMessage },
   ];
 }
