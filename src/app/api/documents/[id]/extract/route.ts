@@ -1,3 +1,4 @@
+import { checkUsage } from "@/lib/request-limits";
 import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import { apiUser, errorResponse, sameOrigin } from "@/lib/api";
@@ -23,6 +24,8 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const { data: doc } = await session.client.from("documents").select("*").eq("id", id).single();
   if (!doc) return errorResponse("Document not found.", 404);
   if (!hasAIConfig() || !process.env.SUPABASE_SECRET_KEY) return errorResponse("Extraction is not configured. Add the server-side Supabase key and Vertex AI settings, then restart the app.", 503);
+  const usageError = await checkUsage(session.client, session.user.id, "extraction");
+  if (usageError) return errorResponse(usageError, 429);
   const { data: file, error } = await session.client.storage.from("shipment-documents").download(doc.storage_path);
   if (error || !file) return errorResponse("Unable to read the uploaded document.", 502);
   const bytes = Buffer.from(await file.arrayBuffer());

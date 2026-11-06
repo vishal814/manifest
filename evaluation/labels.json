@@ -1,0 +1,149 @@
+[
+  {
+    "id": "invoice-text",
+    "path": "samples/SHP-24811-invoice.pdf",
+    "kind": "invoice",
+    "mime": "application/pdf",
+    "fields": {
+      "supplier": "Company B (fictional), China",
+      "buyer": "Sample Importer A (fictional), India",
+      "invoiceNumber": "INV-24811",
+      "invoiceDate": "2026-10-25",
+      "currency": "USD",
+      "incoterm": "FOB",
+      "invoiceTotal": "16320",
+      "packageCount": "120",
+      "grossWeightKg": "3120",
+      "netWeightKg": "2880",
+      "containerNumbers": "TEST1234567"
+    },
+    "items": [
+      {
+        "description": "LED panel light 40W",
+        "hsn": "94054200",
+        "quantity": "2400",
+        "unitPrice": "6.80",
+        "lineTotal": "16320"
+      }
+    ]
+  },
+  {
+    "id": "packing-list",
+    "path": "samples/SHP-24811-packing-list.pdf",
+    "kind": "packing_list",
+    "mime": "application/pdf",
+    "fields": {
+      "supplier": "Company B (fictional), China",
+      "buyer": "Sample Importer A (fictional), India",
+      "invoiceNumber": null,
+      "invoiceDate": "2026-10-25",
+      "currency": null,
+      "incoterm": null,
+      "invoiceTotal": null,
+      "packageCount": "120",
+      "grossWeightKg": "3165",
+      "netWeightKg": "2880",
+      "containerNumbers": "TEST1234567"
+    },
+    "items": [
+      {
+        "description": "LED panel light 40W",
+        "hsn": null,
+        "quantity": "2400",
+        "unitPrice": null,
+        "lineTotal": null
+      }
+    ]
+  },
+  {
+    "id": "bill-of-lading",
+    "path": "samples/SHP-24811-bill-of-lading.pdf",
+    "kind": "bill_of_lading",
+    "mime": "application/pdf",
+    "fields": {
+      "supplier": "Company B (fictional), China",
+      "buyer": "Sample Importer A (fictional), India",
+      "invoiceNumber": null,
+      "invoiceDate": "2026-10-26",
+      "currency": null,
+      "incoterm": null,
+      "invoiceTotal": null,
+      "packageCount": "120",
+      "grossWeightKg": "3120",
+      "netWeightKg": null,
+      "containerNumbers": "TEST1234567"
+    },
+    "items": [
+      {
+        "description": "LED panel light 40W",
+        "hsn": null,
+        "quantity": "2400",
+        "unitPrice": null,
+        "lineTotal": null
+      }
+    ]
+  },
+  {
+    "id": "invoice-raster",
+    "path": "samples/evaluation/SHP-24811-invoice-scan.png",
+    "kind": "invoice",
+    "mime": "image/png",
+    "fields": {
+      "supplier": "Company B (fictional), China",
+      "buyer": "Sample Importer A (fictional), India",
+      "invoiceNumber": "INV-24811",
+      "invoiceDate": "2026-10-25",
+      "currency": "USD",
+      "incoterm": "FOB",
+      "invoiceTotal": "16320",
+      "packageCount": "120",
+      "grossWeightKg": "3120",
+      "netWeightKg": "2880",
+      "containerNumbers": "TEST1234567"
+    },
+    "items": [
+      {
+        "description": "LED panel light 40W",
+        "hsn": "94054200",
+        "quantity": "2400",
+        "unitPrice": "6.80",
+        "lineTotal": "16320"
+      }
+    ]
+  },
+  {
+    "id": "invoice-two-lines",
+    "path": "samples/evaluation/SHP-24813-invoice.pdf",
+    "kind": "invoice",
+    "mime": "application/pdf",
+    "fields": {
+      "supplier": "Example Components Ltd (fictional)",
+      "buyer": "Demo Industrial Imports Pvt Ltd",
+      "invoiceNumber": "INV-24813",
+      "invoiceDate": "2026-11-06",
+      "currency": "USD",
+      "incoterm": "FOB Shanghai",
+      "invoiceTotal": "2750",
+      "packageCount": "30",
+      "grossWeightKg": "420",
+      "netWeightKg": "390",
+      "containerNumbers": "DEMO7654321"
+    },
+    "items": [
+      {
+        "description": "Brass pipe fitting DN20",
+        "hsn": "74122000",
+        "quantity": "500",
+        "unitPrice": "4.20",
+        "lineTotal": "2100"
+      },
+      {
+        "description": "Stainless steel bolts M10",
+        "hsn": "73181500",
+        "quantity": "1000",
+        "unitPrice": "0.65",
+        "lineTotal": "650"
+      }
+    ]
+  }
+]

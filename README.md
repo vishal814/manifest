@@ -1,36 +1,30 @@
 # Manifest
 
-A Next.js + Supabase workspace for shipment document extraction and human review.
+[Open the live evaluation app](https://manifest-710971216169.asia-south1.run.app)
 
-## Project location
+Manifest helps a customs documentation team extract data from invoices, packing lists and bills of lading, review source-backed values, resolve mismatches and export a manager-approved shipment. All supplied fixtures contain fictional data.
 
-This repository lives at `D:\Manifest`.
+## Implemented
 
-## Completed milestones
+- Next.js frontend/backend, Supabase email/password sign-in, PostgreSQL and private document storage.
+- Executives see their own shipments; managers see all shipments and quality reports. Database row-level policies enforce access.
+- Shipment register with search and version-aware Draft, Processing, Needs review and Approved filters.
+- One PDF/JPG/PNG per document type, 10 MB per upload, ten PDF pages. Uploads validate file signatures and enforce actual streamed body size.
+- Real Vertex AI extraction in Mumbai, validated fields, evidence and confidence; highlighted uncertainty and a manual-entry fallback for failed/unreadable sources.
+- Side-by-side review, editable document/line-item values and persistent correction history that retains the original extraction.
+- Deterministic gross-weight, available net-weight and package-count comparisons, plus exact decimal invoice-total versus line-total addition.
+- All three reviews and complete check inputs are required for approval. A manager resolution note is required for discrepancies. Approval and CSV export apply only to the reviewed revision. Later edits require approval again.
+- Manager quality report by field and supplier. This measures original AI agreement with human review, separately from independently labelled evaluation.
+- Evaluation usage limits, protected writes, input validation and private short-lived preview links.
 
-Day 1: setup screen, email/password sign-in and sign-out, executive/manager profiles, protected shipment list with search/status filters, shipment creation, private PDF/JPG/PNG uploads, short-lived original-document links, real Vertex AI extraction adapter, persistent results and uncertainty indicators, loading/empty/error states, and a database migration with row-level access policies.
+## Run locally
 
-Day 3: side-by-side document review, editable extracted fields and line items, manual entry for missing values, and saved corrections alongside the original extraction.
+Requires Node.js 24 and npm. Repository: `D:\Manifest`.
 
-Day 4: gross-weight cross-checks across shipment documents, weight unit conversion, and correction history for edits saved from this milestone onward.
-
-Day 5: managers can approve or return a reviewed shipment. Changes require fresh approval. The export is a generic CSV of reviewed document and line-item fields.
-
-## Requirements
-
-- Node.js 24 LTS and npm.
-- A Supabase project (choose Mumbai), with SQL Editor and Auth access.
-- For extraction: a Google Cloud project with billing, the Vertex AI API enabled, a currently available vision-capable model, and Application Default Credentials.
-- Before confidential documents are used, verify the selected model's data-use terms and actual processing location. A regional URL alone is not proof of data residency.
-
-## Local setup
-
-1. Open a terminal in `D:\Manifest`.
-2. Run `npm ci`.
-3. Copy `.env.example` to `.env.local` and fill in your Supabase project URL, publishable key and **server-only** secret key. Never put a secret key in a variable beginning with `NEXT_PUBLIC_`.
-4. In Supabase SQL Editor, run `supabase/migrations/202611020001_day_one.sql` once on a fresh project. It creates tables, profiles, the private document bucket and access policies. Then run the contents of `supabase/migrations/202611050001_shipment_approvals.sql`. Existing projects that already ran Day 1 only need the Day 5 migration.
-5. Create two fictional test users in Supabase Authentication > Users. Profiles are created automatically as executives. Set their display names through Auth user metadata or SQL.
-6. Promote the intended manager using SQL, replacing the placeholder with their Auth user UUID:
+1. Run `npm ci`.
+2. Copy `.env.example` to `.env.local`. Fill Supabase URL, publishable key and server-only secret key. Never use a `NEXT_PUBLIC_` variable for a secret.
+3. On a fresh Supabase project, run the contents of `supabase/migrations/202611020001_day_one.sql`, then `supabase/migrations/202611050001_shipment_approvals.sql` in SQL Editor. Do not paste their file paths. No new migration is needed for the final checks/reporting release.
+4. Provision fictional users in Supabase Authentication. Their profiles default to executive. Promote the intended manager by Auth UUID:
 
 ```sql
 update public.profiles
@@ -38,65 +32,48 @@ set role = 'manager', display_name = 'Sample Manager'
 where id = 'REPLACE-WITH-AUTH-USER-UUID';
 ```
 
-7. Fill in `GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLOUD_LOCATION` and `VERTEX_MODEL` for extraction. Authenticate locally using `gcloud auth application-default login`. On Cloud Run, attach a service account with least-privilege Vertex AI access instead of committing a service account key.
-8. Run `npm run dev`, then open the Local URL printed by Next.js. Without Supabase configuration the application shows a setup page; it does not fabricate a signed-in session or saved records.
+5. Configure `GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLOUD_LOCATION=asia-south1`, `VERTEX_MODEL=gemini-3.5-flash-lite`. Authenticate locally with `gcloud auth application-default login`. Cloud Run uses its attached service identity.
+6. Run `npm run dev`. Restart after environment changes.
 
-The setup screen checks whether environment variables exist. It cannot verify that the migration or provider credentials are valid. Restart the development server after changing environment variables.
+Accounts are provisioned by the workspace owner; the public app has no self-sign-up flow. Sign in with an existing test account. No passwords or keys are included in this repository.
 
-## Sample documents
-
-Run `node scripts/generate-samples.mjs`. The `samples/` folder contains an invoice, packing list, bill of lading and `expected.json` with labelled reference values.
-
-Create `SHP-24811` with supplier `Company B (fictional), China`, then upload the three sample PDFs. The invoice and bill of lading show 3,120 kg; the packing list shows 3,165 kg. This deliberately creates a 45 kg discrepancy for the future cross-check engine. These files contain synthetic information, not real personal or commercial data.
-
-## Tests and build
+## Checks and evaluation
 
 ```text
-npm run typecheck
-npm test
-npm run build
+npm run check
+npm run evaluate:ai
 ```
 
-Upload/schema tests run without cloud credentials. Database policy tests use an embedded PostgreSQL engine and stub only the Supabase-managed auth/storage schemas. An actual Supabase connection and live AI extraction still require the project credentials above.
+The first command runs TypeScript, automated tests and a production build without AI calls. Tests include PostgreSQL migrations/RLS, review revisions, approval gates, decimal arithmetic, usage limits and bounded upload streams. The second makes real AI calls using configured credentials and consumes provider quota/credits.
 
-## Access and security
+[evaluation/REPORT.md](evaluation/REPORT.md) contains the recorded five-document synthetic evaluation: three shipment PDFs, a rasterized invoice and a two-line invoice. Labels, fixture hashes and observed values are retained for reproducibility. This is a smoke evaluation, not evidence that the client's target of 95% on 200 historical shipments has been achieved. AI confidence is not an accuracy measurement. The in-app report measures reviewer agreement, which can miss uncorrected errors.
 
-- Executives can access their own shipments; managers can access all shipments in this single-company app.
-- Users cannot assign or edit their role through the app or authenticated database API.
-- Source documents are private. Original-document links expire after two minutes.
-- Uploads accept PDF, JPG and PNG up to 10 MB; PDFs are limited to ten pages. File signatures are checked in addition to MIME types. Deploy a request-body limit at the ingress too; application checks alone are not a streaming upload defence.
-- Client-side accounts cannot write extraction results or shipment processing status. The backend uses the server-only Supabase key only after checking access to the document.
-- Changing POST requests require a matching origin. Supabase authentication rate limits apply to sign-in. Add per-user extraction quotas and upload rate limits before opening access beyond the test team.
-- Credentials and SDK error payloads are not printed by the app. Keep `.env.local`, cloud credential files and real personal data outside Git.
-- PDFs are parsed for integrity/page count, not scanned for malware. Only use synthetic evaluation files until production upload protections are added.
-
-## Day 1 extraction limitation
-
-Extraction currently runs in a bounded server request. The database records the attempt and prevents concurrent extraction for the same document. Failed calls can be retried; attempts interrupted for more than three minutes can be reclaimed. This is not durable background execution.
-
-## Next milestones
-
-- Day 6: automated and integration checks completed; keyboard and screen-reader checks deferred by request.
-- **Current — Day 7:** Cloud Run deployment, labelled extraction evaluation and submission walkthrough.
-- See [DEPLOYMENT.md](DEPLOYMENT.md) for hosting configuration and demo limits.
+Original sample PDFs are in `samples/`; labelled extra cases are in `samples/evaluation/`. `node scripts/generate-samples.mjs` regenerates the original fictional PDFs. The original invoice/BOL state 3,120 kg while the packing list states 3,165 kg, deliberately triggering a 45 kg discrepancy. Preserve source values; do not change weights just to make a check pass.
 
 ## Architecture
 
-The Next.js app handles screens and authenticated backend routes. Supabase Auth identifies users; PostgreSQL stores records; private Storage holds originals. The AI adapter reads each document independently and returns validated structured values with source evidence and heuristic confidence scores. AI confidence is not a measured probability of correctness. Gross-weight cross-checks and revision-bound approval/export decisions run in deterministic server code.
+The browser displays screens and sends authenticated requests to Next.js. Supabase Auth identifies the user; RLS restricts reads to permitted shipments. Private Storage holds source files. The backend checks document access before using its server-only key to save validated extraction results and reviews. AI reads one document at a time; deterministic server code handles cross-checks and approval/export decisions. The same revision-bound status drives the register and shipment page.
 
-## Local verification
+Approval hashes include an approval-rules version. Existing approvals made before the final package/invoice checks require a fresh decision. No document data is rewritten by this change.
 
-- TypeScript check passed.
-- 67 automated tests passed, including PostgreSQL migration execution, access-policy enforcement, review validation, cross-checks and approval/export rules.
-- Initial production build passed and the setup page was inspected in the browser.
-- Production dependency audit reported zero known vulnerabilities at verification time.
-- Live Supabase sign-in/uploads, real Vertex AI extraction, saved reviews and manager approval/export were exercised with fictional evaluation documents.
-- Keyboard and screen-reader verification remains deferred.
+## Security and hosting
 
-### Request origin behind a reverse proxy
+- Cloud Run and Vertex AI use Mumbai (`asia-south1`). Supabase Mumbai (`ap-south-1`) was confirmed by the workspace owner on 2026-11-06. See [DEPLOYMENT.md](DEPLOYMENT.md).
+- The Supabase server key is in Secret Manager, outside Git and the image. Google credentials come from the runtime service account.
+- Evaluation allowance per user: 50 extraction/manual attempts and 100 uploaded documents in a rolling 24 hours. In-process burst limits: 10 extraction/manual requests and 20 uploads per minute. Daily usage is checked from stored records. These are evaluation controls, not an atomic distributed billing cap; concurrent requests may race and process restarts reset burst counters.
+- Actual multipart bodies are limited to 10 MB plus 64 KB overhead, even without a Content-Length header. Source file content/type and PDF page counts are checked.
+- Original preview links expire after two minutes. Mutating APIs check origin, session and access. Managers alone can approve shipments or view aggregate quality reports.
+- PDF validation is not malware scanning. Do not use real personal/commercial data for the evaluation. Production needs malware scanning, distributed quotas, operational monitoring, data-retention rules and a representative labelled dataset.
 
-Shipment creation and other changing API calls compare the browser Origin to the incoming Host, rather than Next.js's reconstructed bind hostname. Forwarded-host headers are not trusted. When deploying behind TLS termination or a reverse proxy, set server-only `APP_ORIGIN` to the exact public origin (for example, `https://manifest.example.com`). This takes precedence over request headers.
+## Deliberately deferred / limits
 
-## Live evaluation app
+- Durable background extraction and automatic retries remain deferred by the user. Extraction runs within a bounded request; failed attempts can be retried and previous successful reviews are retained.
+- Keyboard and screen-reader checks are deferred by the user.
+- CSV is a generic reviewed-data export, not a verified filing-software Excel template. Customs portal filing, HSN classification and duty calculation are out of scope.
+- Invoice checks compare stated line totals with the stated invoice total. Separate tax/freight/discount adjustments, negative credit lines and mixed currencies need explicit handling for production; a manager must explain differences. Money parsing supports up to six decimal places, without floating-point addition.
+- Net weights are compared only where stated; fewer than two is explicitly not applicable. Missing or invalid gross weight/package count, or incomplete invoice totals, blocks approval.
+- Initial manual-entry row count is chosen before starting (1-200). Existing extracted rows can be edited; adding/removing rows after extraction is not supported.
 
-[Open Manifest](https://manifest-710971216169.asia-south1.run.app). Sign in with an existing workspace account. See [deployment notes](DEPLOYMENT.md) for runtime configuration, checks and demo limits.
+## Submission
+
+Use [SUBMISSION.md](SUBMISSION.md) for the walkthrough, test evidence and scope notes. Commit history is preserved on the public repository. No secrets or real personal data belong in Git.

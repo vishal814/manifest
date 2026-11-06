@@ -1,3 +1,5 @@
+import { boundedFormData, BodyTooLarge } from "@/lib/bounded-body";
+import { checkUsage } from "@/lib/request-limits";
 import { randomUUID } from "node:crypto";
 import { PDFDocument } from "pdf-lib";
 import { NextResponse } from "next/server";
@@ -13,9 +15,13 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (!uuidSchema.safeParse(id).success) return errorResponse("Invalid shipment reference.");
   const { data: shipment } = await session.client.from("shipments").select("id").eq("id", id).single();
   if (!shipment) return errorResponse("Shipment not found.", 404);
+  const usageError = await checkUsage(session.client, session.user.id, "upload");
+  if (usageError) return errorResponse(usageError, 429);
   const contentLength = Number(request.headers.get("content-length"));
   if (contentLength > MAX_FILE_BYTES + 65536) return errorResponse("Choose a file smaller than 10 MB.", 413);
-  const form = await request.formData().catch(() => null);
+  let form: FormData | null;
+  try { form = await boundedFormData(request, MAX_FILE_BYTES + 65536); }
+  catch (error) { return errorResponse(error instanceof BodyTooLarge ? "Choose a file smaller than 10 MB." : "Invalid upload.", error instanceof BodyTooLarge ? 413 : 400); }
   if (!form) return errorResponse("Invalid upload.");
   const file = form.get("file");
   const kind = documentKindSchema.safeParse(form.get("kind"));

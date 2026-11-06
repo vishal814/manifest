@@ -30,7 +30,7 @@ await writeFile(new URL('expected.json',target),JSON.stringify({
   invoice:{supplier:'Company B (fictional), China',invoiceNumber:'INV-24811',invoiceDate:'2026-10-25',currency:'USD',incoterm:'FOB',invoiceTotal:'16320.00',packageCount:'120',grossWeightKg:'3120',netWeightKg:'2880',quantity:'2400',unitPrice:'6.80',hsn:'94054200',containerNumbers:'TEST1234567'},
   packingList:{grossWeightKg:'3165',netWeightKg:'2880',packageCount:'120'},
   billOfLading:{grossWeightKg:'3120',packageCount:'120'},
-  expectedFutureCheck:{rule:'gross_weight_match',status:'failed',differenceKg:'45'},
-  note:'Labelled expected values for evaluation, not an AI response. The cross-check engine is a later milestone.'
+  expectedCheck:{rule:'gross_weight_match',status:'failed',differenceKg:'45'},
+  note:'Labelled expected values for evaluation, not an AI response. The cross-check engine flags this discrepancy.'
 },null,2)+'\n');
 console.log('Created three fictional PDFs and expected.json in samples/.');

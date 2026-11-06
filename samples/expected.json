@@ -24,10 +24,10 @@
     "grossWeightKg": "3120",
     "packageCount": "120"
   },
-  "expectedFutureCheck": {
+  "expectedCheck": {
     "rule": "gross_weight_match",
     "status": "failed",
     "differenceKg": "45"
   },
-  "note": "Labelled expected values for evaluation, not an AI response. The cross-check engine is a later milestone."
+  "note": "Labelled expected values for evaluation, not an AI response. The cross-check engine flags this discrepancy."
 }

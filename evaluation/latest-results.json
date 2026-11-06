@@ -1,0 +1,601 @@
+{
+  "evaluatedAt": "2026-11-06T05:39:37.735Z",
+  "model": "gemini-3.5-flash-lite",
+  "location": "asia-south1",
+  "documents": 5,
+  "successfulDocuments": 5,
+  "summary": {
+    "correctPresent": 70,
+    "expectedPresent": 70,
+    "correctAbsent": 15,
+    "expectedAbsent": 15
+  },
+  "limitation": "Small synthetic smoke evaluation, not the client target of 95% accuracy on 200 historical shipments. Reviewer agreement is a separate metric. Failed documents are listed and are not counted as successful field evaluations.",
+  "results": [
+    {
+      "id": "invoice-text",
+      "sha256": "4e227b7ed92145694c3fbb5c513c46858088d6d935409ce55cd0522f8c31650c",
+      "milliseconds": 3895,
+      "expectedRows": 1,
+      "actualRows": 1,
+      "comparisons": [
+        {
+          "field": "supplier",
+          "expected": "Company B (fictional), China",
+          "actual": "Company B (fictional), China",
+          "correct": true
+        },
+        {
+          "field": "buyer",
+          "expected": "Sample Importer A (fictional), India",
+          "actual": "Sample Importer A (fictional), India",
+          "correct": true
+        },
+        {
+          "field": "invoiceNumber",
+          "expected": "INV-24811",
+          "actual": "INV-24811",
+          "correct": true
+        },
+        {
+          "field": "invoiceDate",
+          "expected": "2026-10-25",
+          "actual": "2026-10-25",
+          "correct": true
+        },
+        {
+          "field": "currency",
+          "expected": "USD",
+          "actual": "USD",
+          "correct": true
+        },
+        {
+          "field": "incoterm",
+          "expected": "FOB",
+          "actual": "FOB",
+          "correct": true
+        },
+        {
+          "field": "invoiceTotal",
+          "expected": "16320",
+          "actual": "16320.00",
+          "correct": true
+        },
+        {
+          "field": "packageCount",
+          "expected": "120",
+          "actual": "120",
+          "correct": true
+        },
+        {
+          "field": "grossWeightKg",
+          "expected": "3120",
+          "actual": "3120",
+          "correct": true
+        },
+        {
+          "field": "netWeightKg",
+          "expected": "2880",
+          "actual": "2880",
+          "correct": true
+        },
+        {
+          "field": "containerNumbers",
+          "expected": "TEST1234567",
+          "actual": "TEST1234567",
+          "correct": true
+        },
+        {
+          "field": "description",
+          "row": 1,
+          "expected": "LED panel light 40W",
+          "actual": "LED panel light 40W",
+          "correct": true
+        },
+        {
+          "field": "hsn",
+          "row": 1,
+          "expected": "94054200",
+          "actual": "94054200",
+          "correct": true
+        },
+        {
+          "field": "quantity",
+          "row": 1,
+          "expected": "2400",
+          "actual": "2400",
+          "correct": true
+        },
+        {
+          "field": "unitPrice",
+          "row": 1,
+          "expected": "6.80",
+          "actual": "6.80",
+          "correct": true
+        },
+        {
+          "field": "lineTotal",
+          "row": 1,
+          "expected": "16320",
+          "actual": "16320.00",
+          "correct": true
+        }
+      ]
+    },
+    {
+      "id": "packing-list",
+      "sha256": "d0009b17244d71e21f530e7bab344b004af70ed3de682f2a2afb3221e0e08ebe",
+      "milliseconds": 3252,
+      "expectedRows": 1,
+      "actualRows": 1,
+      "comparisons": [
+        {
+          "field": "supplier",
+          "expected": "Company B (fictional), China",
+          "actual": "Company B (fictional), China",
+          "correct": true
+        },
+        {
+          "field": "buyer",
+          "expected": "Sample Importer A (fictional), India",
+          "actual": "Sample Importer A (fictional), India",
+          "correct": true
+        },
+        {
+          "field": "invoiceNumber",
+          "expected": null,
+          "actual": null,
+          "correct": true
+        },
+        {
+          "field": "invoiceDate",
+          "expected": "2026-10-25",
+          "actual": "2026-10-25",
+          "correct": true
+        },
+        {
+          "field": "currency",
+          "expected": null,
+          "actual": null,
+          "correct": true
+        },
+        {
+          "field": "incoterm",
+          "expected": null,
+          "actual": null,
+          "correct": true
+        },
+        {
+          "field": "invoiceTotal",
+          "expected": null,
+          "actual": null,
+          "correct": true
+        },
+        {
+          "field": "packageCount",
+          "expected": "120",
+          "actual": "120",
+          "correct": true
+        },
+        {
+          "field": "grossWeightKg",
+          "expected": "3165",
+          "actual": "3165",
+          "correct": true
+        },
+        {
+          "field": "netWeightKg",
+          "expected": "2880",
+          "actual": "2880",
+          "correct": true
+        },
+        {
+          "field": "containerNumbers",
+          "expected": "TEST1234567",
+          "actual": "TEST1234567",
+          "correct": true
+        },
+        {
+          "field": "description",
+          "row": 1,
+          "expected": "LED panel light 40W",
+          "actual": "LED panel light 40W",
+          "correct": true
+        },
+        {
+          "field": "hsn",
+          "row": 1,
+          "expected": null,
+          "actual": null,
+          "correct": true
+        },
+        {
+          "field": "quantity",
+          "row": 1,
+          "expected": "2400",
+          "actual": "2400",
+          "correct": true
+        },
+        {
+          "field": "unitPrice",
+          "row": 1,
+          "expected": null,
+          "actual": null,
+          "correct": true
+        },
+        {
+          "field": "lineTotal",
+          "row": 1,
+          "expected": null,
+          "actual": null,
+          "correct": true
+        }
+      ]
+    },
+    {
+      "id": "bill-of-lading",
+      "sha256": "1b452577e035e0bf8b7a8ee1905d2a9a4a2f513ac25fcfd6952146ceb6dc850b",
+      "milliseconds": 3324,
+      "expectedRows": 1,
+      "actualRows": 1,
+      "comparisons": [
+        {
+          "field": "supplier",
+          "expected": "Company B (fictional), China",
+          "actual": "Company B (fictional), China",
+          "correct": true
+        },
+        {
+          "field": "buyer",
+          "expected": "Sample Importer A (fictional), India",
+          "actual": "Sample Importer A (fictional), India",
+          "correct": true
+        },
+        {
+          "field": "invoiceNumber",
+          "expected": null,
+          "actual": null,
+          "correct": true
+        },
+        {
+          "field": "invoiceDate",
+          "expected": "2026-10-26",
+          "actual": "2026-10-26",
+          "correct": true
+        },
+        {
+          "field": "currency",
+          "expected": null,
+          "actual": null,
+          "correct": true
+        },
+        {
+          "field": "incoterm",
+          "expected": null,
+          "actual": null,
+          "correct": true
+        },
+        {
+          "field": "invoiceTotal",
+          "expected": null,
+          "actual": null,
+          "correct": true
+        },
+        {
+          "field": "packageCount",
+          "expected": "120",
+          "actual": "120",
+          "correct": true
+        },
+        {
+          "field": "grossWeightKg",
+          "expected": "3120",
+          "actual": "3120",
+          "correct": true
+        },
+        {
+          "field": "netWeightKg",
+          "expected": null,
+          "actual": null,
+          "correct": true
+        },
+        {
+          "field": "containerNumbers",
+          "expected": "TEST1234567",
+          "actual": "TEST1234567",
+          "correct": true
+        },
+        {
+          "field": "description",
+          "row": 1,
+          "expected": "LED panel light 40W",
+          "actual": "LED panel light 40W",
+          "correct": true
+        },
+        {
+          "field": "hsn",
+          "row": 1,
+          "expected": null,
+          "actual": null,
+          "correct": true
+        },
+        {
+          "field": "quantity",
+          "row": 1,
+          "expected": "2400",
+          "actual": "2400",
+          "correct": true
+        },
+        {
+          "field": "unitPrice",
+          "row": 1,
+          "expected": null,
+          "actual": null,
+          "correct": true
+        },
+        {
+          "field": "lineTotal",
+          "row": 1,
+          "expected": null,
+          "actual": null,
+          "correct": true
+        }
+      ]
+    },
+    {
+      "id": "invoice-raster",
+      "sha256": "6b453a13c616784f7357a260c080512ff9e889cc6c2bac0804bb8e96e2c8bd46",
+      "milliseconds": 3771,
+      "expectedRows": 1,
+      "actualRows": 1,
+      "comparisons": [
+        {
+          "field": "supplier",
+          "expected": "Company B (fictional), China",
+          "actual": "Company B (fictional), China",
+          "correct": true
+        },
+        {
+          "field": "buyer",
+          "expected": "Sample Importer A (fictional), India",
+          "actual": "Sample Importer A (fictional), India",
+          "correct": true
+        },
+        {
+          "field": "invoiceNumber",
+          "expected": "INV-24811",
+          "actual": "INV-24811",
+          "correct": true
+        },
+        {
+          "field": "invoiceDate",
+          "expected": "2026-10-25",
+          "actual": "2026-10-25",
+          "correct": true
+        },
+        {
+          "field": "currency",
+          "expected": "USD",
+          "actual": "USD",
+          "correct": true
+        },
+        {
+          "field": "incoterm",
+          "expected": "FOB",
+          "actual": "FOB",
+          "correct": true
+        },
+        {
+          "field": "invoiceTotal",
+          "expected": "16320",
+          "actual": "16320.00",
+          "correct": true
+        },
+        {
+          "field": "packageCount",
+          "expected": "120",
+          "actual": "120",
+          "correct": true
+        },
+        {
+          "field": "grossWeightKg",
+          "expected": "3120",
+          "actual": "3120",
+          "correct": true
+        },
+        {
+          "field": "netWeightKg",
+          "expected": "2880",
+          "actual": "2880",
+          "correct": true
+        },
+        {
+          "field": "containerNumbers",
+          "expected": "TEST1234567",
+          "actual": "TEST1234567",
+          "correct": true
+        },
+        {
+          "field": "description",
+          "row": 1,
+          "expected": "LED panel light 40W",
+          "actual": "LED panel light 40W",
+          "correct": true
+        },
+        {
+          "field": "hsn",
+          "row": 1,
+          "expected": "94054200",
+          "actual": "94054200",
+          "correct": true
+        },
+        {
+          "field": "quantity",
+          "row": 1,
+          "expected": "2400",
+          "actual": "2400",
+          "correct": true
+        },
+        {
+          "field": "unitPrice",
+          "row": 1,
+          "expected": "6.80",
+          "actual": "6.80",
+          "correct": true
+        },
+        {
+          "field": "lineTotal",
+          "row": 1,
+          "expected": "16320",
+          "actual": "16320.00",
+          "correct": true
+        }
+      ]
+    },
+    {
+      "id": "invoice-two-lines",
+      "sha256": "10f4f62e7759b348661b0d0cc3b4b72e0b8fc2a647e33e2c6b550f6bbdfdfaa5",
+      "milliseconds": 3027,
+      "expectedRows": 2,
+      "actualRows": 2,
+      "comparisons": [
+        {
+          "field": "supplier",
+          "expected": "Example Components Ltd (fictional)",
+          "actual": "Example Components Ltd (fictional)",
+          "correct": true
+        },
+        {
+          "field": "buyer",
+          "expected": "Demo Industrial Imports Pvt Ltd",
+          "actual": "Demo Industrial Imports Pvt Ltd",
+          "correct": true
+        },
+        {
+          "field": "invoiceNumber",
+          "expected": "INV-24813",
+          "actual": "INV-24813",
+          "correct": true
+        },
+        {
+          "field": "invoiceDate",
+          "expected": "2026-11-06",
+          "actual": "2026-11-06",
+          "correct": true
+        },
+        {
+          "field": "currency",
+          "expected": "USD",
+          "actual": "USD",
+          "correct": true
+        },
+        {
+          "field": "incoterm",
+          "expected": "FOB Shanghai",
+          "actual": "FOB Shanghai",
+          "correct": true
+        },
+        {
+          "field": "invoiceTotal",
+          "expected": "2750",
+          "actual": "2750.00",
+          "correct": true
+        },
+        {
+          "field": "packageCount",
+          "expected": "30",
+          "actual": "30",
+          "correct": true
+        },
+        {
+          "field": "grossWeightKg",
+          "expected": "420",
+          "actual": "420",
+          "correct": true
+        },
+        {
+          "field": "netWeightKg",
+          "expected": "390",
+          "actual": "390",
+          "correct": true
+        },
+        {
+          "field": "containerNumbers",
+          "expected": "DEMO7654321",
+          "actual": "DEMO7654321",
+          "correct": true
+        },
+        {
+          "field": "description",
+          "row": 1,
+          "expected": "Brass pipe fitting DN20",
+          "actual": "Brass pipe fitting DN20",
+          "correct": true
+        },
+        {
+          "field": "hsn",
+          "row": 1,
+          "expected": "74122000",
+          "actual": "74122000",
+          "correct": true
+        },
+        {
+          "field": "quantity",
+          "row": 1,
+          "expected": "500",
+          "actual": "500",
+          "correct": true
+        },
+        {
+          "field": "unitPrice",
+          "row": 1,
+          "expected": "4.20",
+          "actual": "4.20",
+          "correct": true
+        },
+        {
+          "field": "lineTotal",
+          "row": 1,
+          "expected": "2100",
+          "actual": "2100.00",
+          "correct": true
+        },
+        {
+          "field": "description",
+          "row": 2,
+          "expected": "Stainless steel bolts M10",
+          "actual": "Stainless steel bolts M10",
+          "correct": true
+        },
+        {
+          "field": "hsn",
+          "row": 2,
+          "expected": "73181500",
+          "actual": "73181500",
+          "correct": true
+        },
+        {
+          "field": "quantity",
+          "row": 2,
+          "expected": "1000",
+          "actual": "1000",
+          "correct": true
+        },
+        {
+          "field": "unitPrice",
+          "row": 2,
+          "expected": "0.65",
+          "actual": "0.65",
+          "correct": true
+        },
+        {
+          "field": "lineTotal",
+          "row": 2,
+          "expected": "650",
+          "actual": "650.00",
+          "correct": true
+        }
+      ]
+    }
+  ]
+}

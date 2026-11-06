@@ -1,3 +1,4 @@
+import { ManualEntry } from "@/components/manual-entry";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowUpRight, FileText, RefreshCw, ShieldAlert } from "lucide-react";
@@ -7,7 +8,7 @@ import { extractionSchema, uuidSchema } from "@/lib/validation";
 import type { Document, ExtractionRun, Shipment } from "@/lib/types";
 import { DocumentUpload } from "@/components/document-upload";
 import { DocumentReview } from "@/components/document-review";
-import { compareGrossWeights, grossWeightKg } from "@/lib/cross-checks";
+import { checkShipmentDocuments, compareGrossWeights, grossWeightKg } from "@/lib/cross-checks";
 import { readReview, reviewFieldLabels } from "@/lib/review";
 import { ShipmentDecisionForm } from "@/components/shipment-decision-form";
 import { canExportShipment, shipmentDisplayStatus, shipmentReviewState, type ShipmentDecision } from "@/lib/shipment-approval";
@@ -52,6 +53,12 @@ export default async function ShipmentPage({ params }: { params: Promise<{ id: s
     };
   });
   const check = compareGrossWeights(weights.map(row => row.weight));
+  const documentChecks = checkShipmentDocuments(documents.map(doc => {
+    const run = latestRuns.get(doc.id);
+    const review = run?.status === "completed" ? readReview(run.result) : null;
+    const extraction = extractionSchema.safeParse(run?.result);
+    return { kind: doc.kind, fields: review?.fields ?? (extraction.success ? Object.fromEntries(Object.entries(extraction.data.fields).map(([key, field]) => [key, field.value])) : {}), items: review?.items ?? (extraction.success ? extraction.data.items.map(item => Object.fromEntries(Object.entries(item).map(([key, field]) => [key, field.value]))) : []) };
+  }));
   const formatWeight = new Intl.NumberFormat("en-IN", { maximumSignificantDigits: 15 });
   const approval = shipmentReviewState(shipment, documents, latestRuns);
   const { data: decisionRow, error: decisionError } = await client.from("shipment_decisions")
@@ -74,12 +81,17 @@ export default async function ShipmentPage({ params }: { params: Promise<{ id: s
         {check.status === "mismatch" && <p className="error-message"><strong>Weight mismatch.</strong> The highest and lowest values differ by {formatWeight.format(check.difference)} kg.</p>}
         {check.status === "pending" && <p className="small-note">Waiting for a valid gross weight from all three documents.</p>}
         {check.status === "match" && <p className="notice">Gross weight matches across all three documents.</p>}
+        <p className="small-note">Saved reviews take precedence over AI extraction. All values must be checked against the originals.</p>
         <dl>
           {weights.map(({ kind, document, reviewed, weight }) => <div key={kind}>
             <dt>{document ? <a className="back-link" href={`#document-${document.id}`}>{labels[kind]}</a> : labels[kind]}</dt>
             <dd>{weight === null ? "No valid gross weight yet" : `${formatWeight.format(weight)} kg · ${reviewed ? "Saved review" : "AI extraction"}`}</dd>
           </div>)}
         </dl>
+        {documentChecks.filter(check => check.id !== "gross_weight").map(check => <div key={check.id}>
+          <h3>{check.label}</h3>
+          <p className={check.status === "mismatch" ? "error-message" : check.status === "match" ? "notice" : "small-note"}>{check.message}</p>
+        </div>)}
       </div>
     </section>
     <section className="panel">
@@ -90,7 +102,7 @@ export default async function ShipmentPage({ params }: { params: Promise<{ id: s
           {staleApproval && <p className="notice">The shipment changed after approval and needs a new manager decision.</p>}
           {decision?.decision === "returned" && <p className="notice"><strong>Returned for correction.</strong> {decision.note}</p>}
           {exportReady && decision?.note && <p><strong>Manager note.</strong> {decision.note}</p>}
-          {!approval.complete && <p className="small-note">Save a review with a valid gross weight for each of the three documents to make this shipment ready for approval.</p>}
+          {!approval.complete && <p className="small-note">Save a review for all three documents and complete all pending cross-check values before approval.</p>}
           {exportReady && <a className="button secondary" href={`/api/shipments/${id}/export`}>Download approved CSV</a>}
           {profile.role === "manager" ? <ShipmentDecisionForm key={approval.revision} id={id} revision={approval.revision}
             complete={approval.complete} mismatch={approval.mismatch}/> : !exportReady && <p className="small-note">A manager must approve the current version before export.</p>}
@@ -114,6 +126,7 @@ export default async function ShipmentPage({ params }: { params: Promise<{ id: s
         .flatMap(entry => readReview(entry.result)?.history ?? [])
         .sort((a, b) => b.savedAt.localeCompare(a.savedAt));
       return <section id={`document-${doc.id}`} className="panel document-panel" key={doc.id}><div className="panel-title"><div><h2>{labels[doc.kind]}</h2><span className="small-note">{doc.filename} · {(doc.size_bytes/1024).toFixed(0)} KB</span></div><a href={`/api/documents/${doc.id}/preview`} target="_blank" rel="noopener noreferrer" className="button secondary">Open original<ArrowUpRight size={16}/></a></div><div className="panel-body"><ExtractButton documentId={doc.id} completed={attempt?.status === "completed"} processing={attempt?.status === "processing"} configured={configured}/>{attempt?.status === "failed" && <p role="alert" className="error-message">{run?.status === "completed" ? "The latest extraction failed. You can still review the previous successful result below." : attempt.error_message}</p>}{run?.status === "processing" && <p className="small-note">Extraction is in progress. Refresh to see the result. If an attempt was interrupted, retry after three minutes.</p>}
+      {!parsed.success && run?.status !== "processing" && <ManualEntry documentId={doc.id}/>}
       {parsed.success && run && <DocumentReview key={run.id} documentId={doc.id} kind={doc.kind} runId={run.id} extraction={parsed.data} saved={readReview(run.result)}/>}
       {history.length > 0 && <details>
         <summary>Correction history ({history.length})</summary>

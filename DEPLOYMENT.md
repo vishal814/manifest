@@ -33,3 +33,13 @@ After verifying a replacement secret version, update the Cloud Run secret refere
 ## Deployment smoke checks (2026-11-06)
 
 Public login, CSS and JavaScript: HTTP 200. Unauthenticated shipment page: HTTP 307 to `/login`. Unauthenticated CSV export and shipment creation: HTTP 401. Cross-origin shipment creation: HTTP 403. Signed-in workflows were tested locally before deployment; repeat them with the existing test accounts on the public URL.
+
+## Final feature release (2026-11-06)
+
+Package counts, available net weights, and exact invoice line-total sums now participate in approval/export checks. The rules version changed; prior approvals require a fresh manager decision. Missing required inputs block approval. Discrepancies require an explicit manager note.
+
+Manager-only /reports compares original extraction against saved reviews by field and supplier. Manual entry is available when no successful extraction exists. The real five-document evaluation and labels are in evaluation/.
+
+Per-user evaluation limits are 50 extraction/manual attempts and 100 uploaded documents per rolling day, with in-process burst controls (10/min extraction, 20/min uploads). Daily counts are read from stored records and may race under concurrent requests; burst state resets with the process. Streaming multipart parsing enforces 10 MB plus 64 KB overhead. These are evaluation safeguards rather than distributed production quotas.
+
+The workspace owner confirmed Supabase Mumbai (ap-south-1) on 2026-11-06. Cloud Run and Vertex AI use asia-south1. Durable background work and keyboard/screen-reader verification remain explicitly deferred.

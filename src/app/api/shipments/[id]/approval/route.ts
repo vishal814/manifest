@@ -32,10 +32,10 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const { revision, decision, note } = input.data;
   if (revision !== state.revision) return errorResponse("The shipment changed. Refresh before making a decision.", 409);
   if (decision === "approved" && !state.complete) {
-    return errorResponse("Save reviews with valid gross weights for all three documents before approving.", 409);
+    return errorResponse("Save reviews for all three documents and complete every pending cross-check before approving.", 409);
   }
   if (!note && (decision === "returned" || state.mismatch)) {
-    return errorResponse(decision === "returned" ? "Explain what needs correction." : "Document how the gross-weight mismatch was resolved.", 400);
+    return errorResponse(decision === "returned" ? "Explain what needs correction." : "Document how every cross-check discrepancy was resolved.", 400);
   }
 
   const { error: saveError } = await session.client.from("shipment_decisions").insert({

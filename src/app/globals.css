@@ -20,3 +20,5 @@
 }
 
 .status.approved{background:#e8f3ec;color:#176448}
+
+.review-uncertain{background:#fffcf3;border-left:3px solid #d8ac45;padding:8px;border-radius:4px}

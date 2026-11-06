@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { compareGrossWeights, grossWeightKg } from "./cross-checks";
+import { checkShipmentDocuments, grossWeightKg } from "./cross-checks";
 import { readReview } from "./review";
 import type { Document, ExtractionRun, Shipment } from "./types";
 
@@ -22,14 +22,15 @@ export function shipmentReviewState(shipment: Shipment, documents: Document[], l
     return { document, run, review, weight: grossWeightKg(review?.fields.grossWeightKg) };
   });
   const revision = createHash("sha256").update(JSON.stringify([
-    shipment.id, shipment.reference, shipment.supplier,
+    "approval-checks-v2", shipment.id, shipment.reference, shipment.supplier,
     records.map(({ document, run, review }) => [
       document.kind, document.id, document.storage_path, document.filename, run?.id, run?.status, review?.revision,
     ]),
   ])).digest("hex");
-  const complete = records.length === 3 && records.every(record => record.review && record.weight !== null);
-  const mismatch = compareGrossWeights(records.map(record => record.weight)).status === "mismatch";
-  return { revision, records, complete, mismatch };
+  const checks = checkShipmentDocuments(records.map(record => ({ kind: record.document.kind, fields: record.review?.fields ?? {}, items: record.review?.items ?? [] })));
+  const complete = records.length === 3 && records.every(record => record.review && record.weight !== null) && checks.every(check => check.status !== "pending");
+  const mismatch = checks.some(check => check.status === "mismatch");
+  return { revision, records, complete, mismatch, checks };
 }
 
 export function canExportShipment(state: ReturnType<typeof shipmentReviewState>, decision?: ShipmentDecision) {

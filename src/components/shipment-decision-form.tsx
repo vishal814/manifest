@@ -40,7 +40,7 @@ export function ShipmentDecisionForm({ id, revision, complete, mismatch }: {
   return <form onSubmit={save}>
     <label>Manager note <textarea name="note" rows={3} maxLength={1000} /></label>
     <p className="small-note">{mismatch
-      ? "Explain how the weight discrepancy was resolved before approving. A return also requires a note."
+      ? "Explain how every cross-check discrepancy was resolved before approving. A return also requires a note."
       : "A return requires a note explaining what needs correction."}</p>
     <div className="form-actions">
       <button className="button primary" type="submit" value="approved" disabled={pending || !complete}>Approve shipment</button>{" "}

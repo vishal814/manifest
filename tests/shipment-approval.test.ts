@@ -18,9 +18,10 @@ function runs(weights = ["3120", "3165", "3120"]) {
       fields: {
         ...Object.fromEntries(Object.keys(extractionSchema.shape.fields.shape).map(key => [key, null])),
         grossWeightKg: weights[index],
+        packageCount: "120", currency: "USD", invoiceTotal: "10",
         buyer: '=HYPERLINK("example")',
       },
-      items: [{ description: "Widgets", hsn: null, quantity: "2", unitPrice: null, lineTotal: null }],
+      items: [{ description: "Widgets", hsn: null, quantity: "2", unitPrice: "5", lineTotal: "10" }],
       revision: reviewId, savedBy: reviewId, savedAt: "2026-11-05T00:00:00.000Z",
     } },
   }]));
@@ -90,4 +91,19 @@ describe("shipment dashboard status", () => {
     const draft = { ...shipment, status: "draft" as const };
     expect(shipmentDisplayStatus(draft, shipmentReviewState(draft, [], new Map()))).toBe("draft");
   });
+});
+
+
+it("blocks approval/export when a saved package count or invoice line total is missing", () => {
+  const currentRuns = runs(["3120", "3120", "3120"]);
+  const before = shipmentReviewState(shipment, documents, currentRuns);
+  const decision = { id: "decision", revision: before.revision, decision: "approved" as const, note: "Reviewed.", created_at: "2026-11-06" };
+  const packing = currentRuns.get("packing_list")!.result as { review: { fields: Record<string, string | null> } };
+  packing.review.fields.packageCount = null;
+  const after = shipmentReviewState(shipment, documents, currentRuns);
+  expect(after.complete).toBe(false); expect(canExportShipment(after, decision)).toBe(false);
+  packing.review.fields.packageCount = "120";
+  const invoice = currentRuns.get("invoice")!.result as { review: { items: Record<string, string | null>[] } };
+  invoice.review.items[0].lineTotal = null;
+  expect(shipmentReviewState(shipment, documents, currentRuns).complete).toBe(false);
 });

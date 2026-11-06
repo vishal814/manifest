@@ -55,7 +55,7 @@ export function DocumentReview({ documentId, kind, runId, extraction, saved }: P
 
   function input(key: string, field: ExtractionResult["fields"]["supplier"], reviewed: string | null | undefined, name = key) {
     const label = key === "invoiceDate" && kind !== "invoice" ? "Document date" : reviewFieldLabels[key];
-    return <label key={name}>
+    return <label key={name} className={field.value === null || field.confidence < 0.85 ? "review-uncertain" : undefined}>
       {label}
       <input name={name} defaultValue={(reviewed === undefined ? field.value : reviewed) ?? ""} maxLength={1000}/>
       <small>AI: {field.value ?? "Not found"}{field.sourcePage ? ` · Page ${field.sourcePage}` : ""}{field.value !== null ? ` · ${Math.round(field.confidence * 100)}% confidence` : ""}</small>
