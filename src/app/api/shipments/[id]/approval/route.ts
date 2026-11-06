@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { apiUser, errorResponse, sameOrigin } from "@/lib/api";
 import { loadShipmentApproval } from "@/lib/shipment-approval-data";
@@ -41,5 +42,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     shipment_id: id, revision, decision, note, decided_by: session.user.id,
   });
   if (saveError) return errorResponse("Unable to save the shipment decision.", 500);
+  revalidatePath("/shipments");
+  revalidatePath(`/shipments/${id}`);
   return NextResponse.json({ saved: true });
 }

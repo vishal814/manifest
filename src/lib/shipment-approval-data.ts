@@ -8,29 +8,38 @@ type Snapshot = Shipment & {
   shipment_decisions: ShipmentDecision[];
 };
 
-export async function loadShipmentApproval(client: SupabaseClient, id: string) {
+function approvalQuery(client: SupabaseClient) {
   // Read the data and decisions from a single database snapshot.
-  const { data, error } = await client.from("shipments")
+  return client.from("shipments")
     .select("*,documents(*,extraction_runs(id,document_id,status,result,error_message,created_at)),shipment_decisions(id,revision,decision,note,created_at)")
-    .eq("id", id)
     .neq("documents.extraction_runs.status", "failed")
     .order("created_at", { referencedTable: "documents.extraction_runs", ascending: false })
     .limit(1, { referencedTable: "documents.extraction_runs" })
     .order("created_at", { referencedTable: "shipment_decisions", ascending: false })
     .order("id", { referencedTable: "shipment_decisions", ascending: false })
-    .limit(1, { referencedTable: "shipment_decisions" })
-    .maybeSingle();
-  if (error || !data) return { error, snapshot: null };
+    .limit(1, { referencedTable: "shipment_decisions" });
+}
 
-  const shipment = data as Snapshot;
+function approvalSnapshot(shipment: Snapshot) {
   const runs = new Map<string, ExtractionRun>();
   for (const document of shipment.documents) {
     const latest = document.extraction_runs[0];
     if (latest) runs.set(document.id, latest);
   }
-  return { error: null, snapshot: {
+  return {
     shipment,
     state: shipmentReviewState(shipment, shipment.documents, runs),
     decision: latestShipmentDecision(shipment.shipment_decisions),
-  } };
+  };
+}
+
+export async function loadShipmentApproval(client: SupabaseClient, id: string) {
+  const { data, error } = await approvalQuery(client).eq("id", id).maybeSingle();
+  return { error, snapshot: data ? approvalSnapshot(data as Snapshot) : null };
+}
+
+export async function loadShipmentRegister(client: SupabaseClient) {
+  // One RLS-protected snapshot for all rows; avoid a request per shipment.
+  const { data, error } = await approvalQuery(client).order("created_at", { ascending: false }).limit(200);
+  return { error, snapshots: (data ?? []).map(row => approvalSnapshot(row as Snapshot)) };
 }

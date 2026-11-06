@@ -18,3 +18,5 @@
   .review-layout:not([hidden]) { grid-template-columns: minmax(0, 1fr); }
   .review-form { max-height: none; }
 }
+
+.status.approved{background:#e8f3ec;color:#176448}

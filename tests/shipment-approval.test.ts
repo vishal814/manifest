@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { approvedShipmentCsv, canExportShipment, shipmentReviewState } from "../src/lib/shipment-approval";
+import { approvedShipmentCsv, canExportShipment, shipmentDisplayStatus, shipmentReviewState } from "../src/lib/shipment-approval";
 import type { Document, ExtractionRun, Shipment } from "../src/lib/types";
 import { extractionSchema } from "../src/lib/validation";
 
@@ -50,5 +50,44 @@ describe("approval-gated shipment export", () => {
     result.review.revision = "2b82a2c8-7b4d-49c9-a318-b8a4a8bdb390";
     expect(canExportShipment(shipmentReviewState(shipment, documents, currentRuns), decision)).toBe(false);
     expect(canExportShipment(shipmentReviewState(shipment, documents.slice(1), currentRuns), decision)).toBe(false);
+  });
+});
+
+
+describe("shipment dashboard status", () => {
+  it("removes a current approval from the review queue even when extraction status still says needs_review", () => {
+    const state = shipmentReviewState(shipment, documents, runs(["3120", "3120", "3120"]));
+    const decision = { id: "decision", revision: state.revision, decision: "approved" as const, note: "", created_at: "2026-11-05" };
+    expect(shipmentDisplayStatus(shipment, state, decision)).toBe("approved");
+    expect(shipmentDisplayStatus(shipment, state)).toBe("needs_review");
+  });
+
+  it("returns an edited approval to needs_review and respects a later return decision", () => {
+    const currentRuns = runs(["3120", "3120", "3120"]);
+    const state = shipmentReviewState(shipment, documents, currentRuns);
+    const decision = { id: "decision", revision: state.revision, decision: "approved" as const, note: "", created_at: "2026-11-05" };
+    const result = currentRuns.get("invoice")!.result as { review: { revision: string } };
+    result.review.revision = "2b82a2c8-7b4d-49c9-a318-b8a4a8bdb390";
+    expect(shipmentDisplayStatus(shipment, shipmentReviewState(shipment, documents, currentRuns), decision)).toBe("needs_review");
+    expect(shipmentDisplayStatus(shipment, state, { ...decision, decision: "returned" })).toBe("needs_review");
+  });
+
+  it("requires complete reviews and mismatch resolution before displaying approved", () => {
+    const state = shipmentReviewState(shipment, documents, runs());
+    const decision = { id: "decision", revision: state.revision, decision: "approved" as const, note: "", created_at: "2026-11-05" };
+    expect(shipmentDisplayStatus(shipment, state, decision)).toBe("needs_review");
+    expect(shipmentDisplayStatus(shipment, state, { ...decision, note: "Carrier verified discrepancy." })).toBe("approved");
+    const incomplete = shipmentReviewState(shipment, documents.slice(1), runs());
+    expect(shipmentDisplayStatus(shipment, incomplete, { ...decision, revision: incomplete.revision })).toBe("needs_review");
+  });
+
+  it("shows processing while an approved document is being extracted again, and preserves drafts", () => {
+    const currentRuns = runs();
+    const state = shipmentReviewState(shipment, documents, currentRuns);
+    const decision = { id: "decision", revision: state.revision, decision: "approved" as const, note: "Resolved.", created_at: "2026-11-05" };
+    currentRuns.set("invoice", { ...currentRuns.get("invoice")!, id: "new-run", status: "processing", result: null });
+    expect(shipmentDisplayStatus(shipment, shipmentReviewState(shipment, documents, currentRuns), decision)).toBe("processing");
+    const draft = { ...shipment, status: "draft" as const };
+    expect(shipmentDisplayStatus(draft, shipmentReviewState(draft, [], new Map()))).toBe("draft");
   });
 });

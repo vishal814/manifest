@@ -87,7 +87,7 @@ The Next.js app handles screens and authenticated backend routes. Supabase Auth 
 ## Local verification
 
 - TypeScript check passed.
-- 63 automated tests passed, including PostgreSQL migration execution, access-policy enforcement, review validation, cross-checks and approval/export rules.
+- 67 automated tests passed, including PostgreSQL migration execution, access-policy enforcement, review validation, cross-checks and approval/export rules.
 - Initial production build passed and the setup page was inspected in the browser.
 - Production dependency audit reported zero known vulnerabilities at verification time.
 - Live Supabase sign-in/uploads, real Vertex AI extraction, saved reviews and manager approval/export were exercised with fictional evaluation documents.

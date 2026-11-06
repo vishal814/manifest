@@ -37,6 +37,14 @@ export function canExportShipment(state: ReturnType<typeof shipmentReviewState>,
     && (!state.mismatch || Boolean(decision.note.trim()));
 }
 
+// Use the same revision-bound approval for the register and shipment workspace.
+export function shipmentDisplayStatus(shipment: Shipment, state: ReturnType<typeof shipmentReviewState>, decision?: ShipmentDecision): Shipment["status"] | "approved" {
+  if (canExportShipment(state, decision)) return "approved";
+  if (state.records.some(record => record.run?.status === "processing")) return "processing";
+  if (decision) return "needs_review";
+  return shipment.status;
+}
+
 function csvCell(value: string | null) {
   const text = value ?? "";
   // Protect spreadsheet users from formulas embedded in source or review text.

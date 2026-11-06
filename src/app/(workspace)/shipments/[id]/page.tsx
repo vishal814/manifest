@@ -10,10 +10,10 @@ import { DocumentReview } from "@/components/document-review";
 import { compareGrossWeights, grossWeightKg } from "@/lib/cross-checks";
 import { readReview, reviewFieldLabels } from "@/lib/review";
 import { ShipmentDecisionForm } from "@/components/shipment-decision-form";
-import { canExportShipment, shipmentReviewState, type ShipmentDecision } from "@/lib/shipment-approval";
+import { canExportShipment, shipmentDisplayStatus, shipmentReviewState, type ShipmentDecision } from "@/lib/shipment-approval";
 import { ExtractButton } from "@/components/extract-button";
 
-const labels: Record<string, string> = { invoice: "Commercial invoice", packing_list: "Packing list", bill_of_lading: "Bill of lading", draft: "Draft", processing: "Processing", needs_review: "Needs review" };
+const labels: Record<string, string> = { invoice: "Commercial invoice", packing_list: "Packing list", bill_of_lading: "Bill of lading", draft: "Draft", processing: "Processing", needs_review: "Needs review", approved: "Approved" };
 
 export default async function ShipmentPage({ params }: { params: Promise<{ id: string }> }) {
   const { client, user, profile } = await requireUser(); const { id } = await params;
@@ -60,10 +60,10 @@ export default async function ShipmentPage({ params }: { params: Promise<{ id: s
   const decision = decisionRow as ShipmentDecision | null;
   const exportReady = canExportShipment(approval, decision ?? undefined);
   const staleApproval = decision?.decision === "approved" && decision.revision !== approval.revision;
-  const statusLabel = exportReady ? "Approved" : staleApproval || decision?.decision === "returned"
-    ? "Needs review" : labels[shipment.status];
+  const displayStatus = shipmentDisplayStatus(shipment, approval, decision ?? undefined);
+  const statusLabel = labels[displayStatus];
   const configured = hasAIConfig() && Boolean(process.env.SUPABASE_SECRET_KEY);
-  return <><Link href="/shipments" className="back-link"><ArrowLeft size={16}/>All shipments</Link><div className="page-heading"><div><span className="eyebrow accent">SHIPMENT WORKSPACE</span><h1>{shipment.reference}</h1><p>{shipment.supplier}</p></div><span className={`status ${shipment.status}`}>{statusLabel}</span></div>
+  return <><Link href="/shipments" className="back-link"><ArrowLeft size={16}/>All shipments</Link><div className="page-heading"><div><span className="eyebrow accent">SHIPMENT WORKSPACE</span><h1>{shipment.reference}</h1><p>{shipment.supplier}</p></div><span className={`status ${displayStatus}`}>{statusLabel}</span></div>
     <div className="notice"><ShieldAlert size={19}/><span><strong>Document review.</strong> Compare extracted values with the original and save any corrections.</span></div>
     {process.env.GOOGLE_CLOUD_LOCATION === "global" && <p className="notice">Global demo extraction is available for the three original Manifest sample PDFs.</p>}
     <section className="panel"><div className="panel-title"><h2>Source documents</h2><span className="count">{documents.length} / 3 uploaded</span></div><div className="panel-body"><DocumentUpload shipmentId={id} existingKinds={documents.map(d => d.kind)}/></div></section>
