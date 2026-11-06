@@ -76,21 +76,27 @@ Extraction currently runs in a bounded server request. The database records the 
 
 ## Next milestones
 
-- **Next — Day 6:** security and integration tests, plus mobile and accessibility polish.
-- Day 7: deployment, labelled extraction evaluation and submission walkthrough.
+- Day 6: automated and integration checks completed; keyboard and screen-reader checks deferred by request.
+- **Current — Day 7:** Cloud Run deployment, labelled extraction evaluation and submission walkthrough.
+- See [DEPLOYMENT.md](DEPLOYMENT.md) for hosting configuration and demo limits.
 
 ## Architecture
 
-The Next.js app handles screens and authenticated backend routes. Supabase Auth identifies users; PostgreSQL stores records; private Storage holds originals. The AI adapter reads each document independently and returns validated structured values with source evidence and heuristic confidence scores. AI confidence is not a measured probability of correctness. Cross-check and export decisions will be implemented in deterministic server code.
+The Next.js app handles screens and authenticated backend routes. Supabase Auth identifies users; PostgreSQL stores records; private Storage holds originals. The AI adapter reads each document independently and returns validated structured values with source evidence and heuristic confidence scores. AI confidence is not a measured probability of correctness. Gross-weight cross-checks and revision-bound approval/export decisions run in deterministic server code.
 
 ## Local verification
 
 - TypeScript check passed.
-- 26 automated tests passed, including PostgreSQL migration execution and access-policy enforcement.
+- 63 automated tests passed, including PostgreSQL migration execution, access-policy enforcement, review validation, cross-checks and approval/export rules.
 - Initial production build passed and the setup page was inspected in the browser.
 - Production dependency audit reported zero known vulnerabilities at verification time.
-- Live Supabase sign-in/uploads and real Vertex AI calls have not been exercised because project credentials are not configured.
+- Live Supabase sign-in/uploads, real Vertex AI extraction, saved reviews and manager approval/export were exercised with fictional evaluation documents.
+- Keyboard and screen-reader verification remains deferred.
 
 ### Request origin behind a reverse proxy
 
 Shipment creation and other changing API calls compare the browser Origin to the incoming Host, rather than Next.js's reconstructed bind hostname. Forwarded-host headers are not trusted. When deploying behind TLS termination or a reverse proxy, set server-only `APP_ORIGIN` to the exact public origin (for example, `https://manifest.example.com`). This takes precedence over request headers.
+
+## Live evaluation app
+
+[Open Manifest](https://manifest-710971216169.asia-south1.run.app). Sign in with an existing workspace account. See [deployment notes](DEPLOYMENT.md) for runtime configuration, checks and demo limits.
